@@ -1,26 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Exercise1
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            string[] products = new string[3];
+            ICollection<Product> products = new List<Product>();
             for (int i = 0; i < 3; i++)
             {
-                Console.Write("Product " + (i + 1) + ": ");
+                Console.Write($"Product {i + 1}: ");
                 string productName = Console.ReadLine();
 
-                int existingProductIndex = Array.IndexOf(products, productName);
-                if (existingProductIndex > -1)
+                Console.Write($"Available Stock for {productName}: ");
+                int availableStock = int.Parse(Console.ReadLine());
+
+                Product existingProduct = products.FirstOrDefault(p => p.Name == productName);
+                if (existingProduct != null)
                 {
                     Console.WriteLine("Product already exists.");
                     i--;
                 }
                 else
                 {
-                    products[i] = productName;
+                    products.Add(new Product
+                    {
+                        Name = productName,
+                        AvailableStock = availableStock
+                    });;
                     Console.WriteLine("Product '" + productName + "' added.");
                 }
             }
@@ -35,28 +44,38 @@ namespace Exercise1
             while(!isShoppingFinished)
             {
                 Console.WriteLine("Available products");
-                for (int i = 0; i < products.Length; i++)
+                foreach (var product in products)
                 {
-                    if(!string.IsNullOrEmpty(products[i]))
-                    {
-                        Console.WriteLine(products[i]);
-                    }
+                    Console.WriteLine($"{product.Name} ({product.AvailableStock} available)");
                 }
 
                 Console.WriteLine();
                 Console.WriteLine("What product do you want to buy?");
                 string productName = Console.ReadLine();
 
-                int existingProductIndex = Array.IndexOf(products, productName);
-                if (existingProductIndex > -1)
-                {
-                    products[existingProductIndex] = string.Empty;
-                    Console.WriteLine("Product '" + productName + "' bought!");
-                }
-                else
+                Product productToBuy = products.FirstOrDefault(p => p.Name == productName);
+                if (productToBuy == null)
                 {
                     Console.WriteLine("The product does not exist.");
+                    continue;
                 }
+
+                Console.WriteLine("How many do you want to buy?");
+                int numberToBuy = int.Parse(Console.ReadLine());
+
+                if (numberToBuy > productToBuy.AvailableStock)
+                {
+                    Console.WriteLine("Not enough items in stock.");
+                    continue;
+                }
+
+                productToBuy.AvailableStock -= numberToBuy;
+                if (productToBuy.AvailableStock == 0)
+                {
+                    products.Remove(productToBuy);
+                }
+
+                Console.WriteLine("Product '" + productName + "' bought!");
 
                 Console.WriteLine();
                 Console.WriteLine("Want to buy more? (y/n)");
